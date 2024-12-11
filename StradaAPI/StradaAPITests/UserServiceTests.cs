@@ -16,8 +16,10 @@ public class UserServiceTests
             .Options;
 
         var context = new AppDbContext(options);
+        context.Database.EnsureDeleted();  // Delete existing schema
         context.Database.OpenConnection(); // Open connection to SQLite
-        context.Database.EnsureCreated();  // Ensure schema is created
+        context.Database.EnsureCreated();  // Recreate schema
+
         return context;
     }
 
@@ -25,17 +27,17 @@ public class UserServiceTests
     public void CreateUser_ValidUser_AddsUserToDatabase()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
         var user = new User
         {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@example.com",
+            FirstName = "Berns",
+            LastName = "Caay",
+            Email = "berns.caay@testing.com",
             Address = new Address
             {
                 Street = "123 Main St",
-                City = "Springfield",
+                City = "Navotas",
                 PostCode = 12345
             },
             Employments = new List<Employment>
@@ -63,39 +65,39 @@ public class UserServiceTests
     public void CreateUser_DuplicateEmail_ThrowsArgumentException()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
         var user1 = new User
         {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@example.com"
+            FirstName = "Berns",
+            LastName = "Caay",
+            Email = "berns.caay@testing.com"
         };
         var user2 = new User
         {
-            FirstName = "Jane",
+            FirstName = "John",
             LastName = "Smith",
-            Email = "john.doe@example.com"
+            Email = "berns.caay@testing.com"
         };
 
         service.CreateUser(user1);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => service.CreateUser(user2));
-        Assert.Equal("Email is required and must be unique.", exception.Message);
+         var exception = Assert.Throws<ArgumentException>(() => service.CreateUser(user2));
+         Assert.Equal("Email is required and must be unique.", exception.Message);
     }
 
     [Fact]
     public void GetUserById_ValidId_ReturnsUser()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
         var user = new User
         {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@example.com"
+            FirstName = "Berns",
+            LastName = "Caay",
+            Email = "berns.caay@testing.com"
         };
 
         service.CreateUser(user);
@@ -105,14 +107,14 @@ public class UserServiceTests
 
         // Assert
         Assert.NotNull(retrievedUser);
-        Assert.Equal("John", retrievedUser.FirstName);
+        Assert.Equal("Berns", retrievedUser.FirstName);
     }
 
     [Fact]
     public void GetUserById_InvalidId_ThrowsKeyNotFoundException()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
 
         // Act & Assert
@@ -124,47 +126,49 @@ public class UserServiceTests
     public void UpdateUser_ValidUser_UpdatesDatabase()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
         var user = new User
         {
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john.doe@example.com"
+            FirstName = "Berns",
+            LastName = "Caay",
+            Email = "berns.caay@testing.com"
         };
 
         service.CreateUser(user);
 
         var updatedUser = new User
         {
-            FirstName = "Johnny",
-            LastName = "Doe",
-            Email = "johnny.doe@example.com"
+            FirstName = "Bernard",
+            LastName = "Vic Caay",
+            Email = "bernard.vic.caay@testing.com"
         };
 
         // Act
         var result = service.UpdateUser(1, updatedUser);
 
         // Assert
-        Assert.Equal("Johnny", result.FirstName);
-        Assert.Equal("johnny.doe@example.com", result.Email);
+        Assert.Equal("Bernard", result.FirstName);
+        Assert.Equal("Vic Caay", result.LastName);
+        Assert.Equal("bernard.vic.caay@testing.com", result.Email);
     }
 
     [Fact]
     public void UpdateUser_InvalidId_ThrowsKeyNotFoundException()
     {
         // Arrange
-        var context = CreateInMemoryDbContext();
+        using var context = CreateInMemoryDbContext();
         var service = new UserService(context);
         var updatedUser = new User
         {
-            FirstName = "Johnny",
-            LastName = "Doe",
-            Email = "johnny.doe@example.com"
+            FirstName = "Bernard",
+            LastName = "Vic Caay",
+            Email = "bernard.vic.caay@testing.com"
         };
 
         // Act & Assert
         var exception = Assert.Throws<KeyNotFoundException>(() => service.UpdateUser(99, updatedUser));
         Assert.Equal("User not found.", exception.Message);
     }
+
 }
