@@ -20,7 +20,7 @@ Used  Visual Studio Mac. For this reason I'm having hard time and adjustment wit
 ## Installation\Cloning
 1. Clone the repository:
    ```bash
-   git clone https://github.com/berns021/StradaAPI.git
+   git clone https://github.com/berns021/StradaAPIExam.git
    ```
 2. Then open the .sln using visual studio
 3. Swagger will prompt
